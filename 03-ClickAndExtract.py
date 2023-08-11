@@ -15,8 +15,8 @@ importlib.reload(Fun)
 importlib.reload(FunStat)
 
 # For every image in dir_img there must be one in dir_mask (with same name)
-dir_img   = '/home/jrmgarcia/ProjData/OilDSs/OilSpillDetection/train/images'
-dir_mask  = '/home/jrmgarcia/ProjData/OilDSs/OilSpillDetection/train/labels'
+dir_img   = '/data/2-output_patches'
+dir_mask  = '/data/2-output_labels'
 
 # Remember: OpenCV is BGR, PIL is RGB, mpl is RGB
 scr_wid, scr_hei = Fun.getLargerMonitor()
