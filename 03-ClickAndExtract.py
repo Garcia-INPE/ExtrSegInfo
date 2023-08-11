@@ -37,6 +37,12 @@ def msg(text, msg_type="y"):
    print(ESC + "0m")  # RESET ALL ATTRIBS
 
 
+# Font definition
+font = cv2.FONT_HERSHEY_SIMPLEX
+fontScale = 10
+color = (255,0,255)
+thickness = 2
+
 # Callback function for mouse interation over the image, captures clicks and movements
 # Think that when this method is executed, the window with 3 imgs is already been shown
 def click_and_do(event, x, y, flags, param):
@@ -57,13 +63,22 @@ def click_and_do(event, x, y, flags, param):
       # len(indexes[0]), len(indexes[1]), img.shape, img.shape[0]*img.shape[1]
       img_work[indexes[0], indexes[1], :] = sel_mask
       img_show = cv2.hconcat([img, img_label, img_work])
+
+      text = "Original"
+      coordinates = (100, img_wid/2)
+      #img_show = cv2.putText(img_show, "Original"   , (100                      , 10), font, fontScale, color, thickness, cv2.LINE_AA)
+      #img_show = cv2.putText(img_show, "Mask"       , (img_wid + (img_wid/2)    , 10), font, fontScale, color, thickness, cv2.LINE_AA)
+      #img_show = cv2.putText(img_show, "Masked  ori", ((img_wid*2) + (img_wid/2), 10), font, fontScale, color, thickness, cv2.LINE_AA)
       cv2.imshow("img_show", img_show) # Shows the new image over the old one
+      #cv2.setWindowProperty("img_show", cv2.WND_PROP_TOPMOST, 0)
       #key = cv2.waitKey(0) & 0xFF
       #cv2.destroyAllWindows()
 
 # Getting all fnames
 fnames = sorted(glob.glob(dir_img + '/*.jpg'))
 idx_img=0; fname_img = fnames[idx_img]
+header = ['img_name', 'mask', 'mean', 'geometric_mean', 'harmonic_mean', 'median', 'mode', 'quantiles']
+STATS_DF = pd.DataFrame(columns=header)
 for idx_img, fname_img in enumerate(fnames):
    img_ori  = cv2.imread(fname_img)                       # ***** BGR FORMAT ******
    fname_label = fname_img.replace("patches", "labels").replace("jpg", "png")
@@ -75,8 +90,8 @@ for idx_img, fname_img in enumerate(fnames):
    fname_stat = f"./3-stats/stat_{tail.replace('jpg', 'csv')}"
 
    print("---------------------------------------------------------------------------")
-   print("* Img fname: ", tail, ": ", sep="",)
-   print("* Img dim..: ", img_ori_wid, "x", img_ori_hei, ", asp_ratio: ", img_ori_hei / img_ori_wid, ", resizing, ", sep="", end="", flush=True) 
+   print("* Img fname..: ", tail, ": ", sep="",)
+   print("* Img ori dim: ", img_ori_wid, "x", img_ori_hei, ", asp_ratio: ", img_ori_hei / img_ori_wid, ", resizing, ", sep="", end="", flush=True) 
    
    # Resize the images to fit 3 of them, side by side
    img, fac_wid, fac_hei = Fun.resizeImg(img_ori, scr_wid, scr_hei)
@@ -93,6 +108,7 @@ for idx_img, fname_img in enumerate(fnames):
    # in order to assign a callback function to it before the creation of the window itself
    cv2.namedWindow("img_show")
    cv2.setMouseCallback("img_show", click_and_do)
+   cv2.setWindowProperty("img_show", cv2.WND_PROP_TOPMOST, 1)
 
    print("\nControls:\nMouse down: select mask\n(N) Next Image \
           \n(X) Extract masked info\n(Q) Quit\n")
@@ -103,7 +119,10 @@ for idx_img, fname_img in enumerate(fnames):
       # Concatenate 3 images horizontally
       img_show = cv2.hconcat([img, img_label, img_work])
       cv2.imshow("img_show", img_show)
+      # Workaround to return the focus to the image window
+      cv2.setWindowProperty("img_show", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
       key = cv2.waitKey(0) & 0xFF
+      cv2.setWindowProperty("img_show", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL);
 
       if key == ord("x"):    # toggle crossed lines on/off
          print("Extracting statistics:")
@@ -112,54 +131,18 @@ for idx_img, fname_img in enumerate(fnames):
       elif key == ord("q"):    # quit
          break
       # Extract 
-      if (indexes is not None) and (key == ord("x")):
-         data = img[indexes[0], indexes[1], 0]  # all color dimension are iqual, only one is needed
-         print(FunStat.get_stats(data))
-
-
-      #    dsRGB_image = pd.DataFrame(columns=col_names)  # DS dos quadrantes de uma imagem
-      #    #fname_clip = dir_clipped + re.sub("jpg|jpeg", "csv", tail, flags=re.I)
-
-      #    # Remove se já existir         
-      #    if os.path.isfile(fname_clip):
-      #       os.remove(fname_clip)
-            
-      #    for r in range(len(refPt)):
-      #       # retorna os pontos para a imagem original 
-      #       x1 = min(refPt[r][0][0], refPt[r][1][0])
-      #       x2 = max(refPt[r][0][0], refPt[r][1][0])
-      #       y1 = min(refPt[r][0][1], refPt[r][1][1])
-      #       y2 = max(refPt[r][0][1], refPt[r][1][1])
-      #       print("* Image limits after resized (x1,x2,y1,y2): ", x1, x2, y1, y2, flush=True)
-
-      #       # Torna o retangulo sendo analisado com as bordas vermelhas
-      #       img_work2 = img_work.copy()  
-      #       cv2.rectangle(img=img_work2, pt1=(x1, y1), pt2=(x2, y2), color=tuple([0,0,255]))#, thickness=cv2.FILLED)
-      #       cv2.imshow("img_work", img_work2)
-            
-      #       x1 = int(x1 * fac_wid)
-      #       x2 = int(x2 * fac_wid)
-      #       y1 = int(y1 * fac_hei)
-      #       y2 = int(y2 * fac_hei)
-      #       print("* Corresponding original image limits (x1,x2,y1,y2): ", x1, x2, y1, y2, flush=True)
-
-      #       bg_type_str = "AREIA" if refPt[r][2] == 1 else "OUTRO" if refPt[r][2] == 2 else "NAO_OLEO"
-            
-      #       # Mostra o quadrante sendo registrado
-      #       clip = img_ori[y1:(y2+1), x1:(x2+1)]     # Todos os pixels do quadrante em formato 2D da imagem intacta
-      #       #clip = fun.zoomclip(rect2D, 200)
-      #       cv2.imshow("clip", clip)            
-      #       cv2.waitKey(0) & 0xFF
-      #       cv2.destroyWindow("clip")
-
-      #       new_row = [bg_type_str, x1, x2, y1, y2]
-      #       # rewrite the file
-      #       with open(fname_clip, 'a') as f:
-      #          writer = csv.writer(f, delimiter=";")
-      #          writer.writerow(new_row)               
-               
-      #       msg("- Clipped region REGISTERED: " + str(x1) + " to " + str(x2) + " and " + str(y1) + " to " + str(y2), "i")
-
+      if key == ord("x"):
+         if indexes is not None:
+            data = img[indexes[0], indexes[1], 0]  # all color dimension are equal, only one is needed
+            stats = list((tail, 
+                          ",".join(str(x) for x in sel_mask)) + 
+                          FunStat.get_stats(data))
+            #print(stats)
+            STATS_DF.loc[len(STATS_DF)] = stats
+            print(STATS_DF)
+            #print(STATS_DF.drop_duplicates(inplace=True))
+         else:
+            print(" *** No segment selectd ***")
          if key == ord("o"):    # register and leave
             break
 
