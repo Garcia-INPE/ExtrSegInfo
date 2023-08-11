@@ -15,8 +15,8 @@ importlib.reload(Fun)
 importlib.reload(FunStat)
 
 # For every image in dir_img there must be one in dir_mask (with same name)
-dir_img   = '/data/2-output_patches'
-dir_mask  = '/data/2-output_labels'
+dir_img   = './data/2-output_patches'
+dir_mask  = './data/2-output_labels'
 
 # Remember: OpenCV is BGR, PIL is RGB, mpl is RGB
 scr_wid, scr_hei = Fun.getLargerMonitor()
@@ -66,7 +66,7 @@ fnames = sorted(glob.glob(dir_img + '/*.jpg'))
 idx_img=0; fname_img = fnames[idx_img]
 for idx_img, fname_img in enumerate(fnames):
    img_ori  = cv2.imread(fname_img)                       # ***** BGR FORMAT ******
-   fname_label = fname_img.replace("images", "labels").replace("jpg", "png")
+   fname_label = fname_img.replace("patches", "labels").replace("jpg", "png")
    img_label  = cv2.imread(fname_label)                    # ***** BGR FORMAT ******
    img_ori_hei, img_ori_wid, _ = img_ori.shape
    head, tail = os.path.split(fname_img)
