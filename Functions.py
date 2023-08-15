@@ -419,13 +419,13 @@ def resizeImg(img, scr_wid, scr_hei, show_mode="F", quiet=False):
         fy = img_hei / new_img_hei
         
         if not quiet:
-           print("img new dim: ", new_img_wid, "x", new_img_hei, ", asp_ratio: ", asp_rat_new, 
+           print("* Img new dim: ", new_img_wid, "x", new_img_hei, ", asp_ratio: ", asp_rat_new, 
                  ", fx: ", fx, ", fy: ", fy, sep="", flush=True)
         
         return(cv2.resize(img, (new_img_wid, new_img_hei), interpolation = cv2.INTER_AREA), fx, fy)
     else:
         if not quiet:
-           print("nothing to be done.", sep="", flush=True)
+           print("* No resizing needed (the 3 images fit screen width)", sep="", flush=True)
         # Se não precisa de resize fx e fy = 1
         return(img, 1, 1)
 
